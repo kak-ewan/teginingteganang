@@ -427,15 +427,447 @@
             color: #991b1b;
         }
     </style>
+<style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            animation: float 8s infinite ease-in-out;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            50% {
+                transform: translateY(-20px) translateX(10px);
+            }
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        
+        .chat-bubble {
+            border-radius: 18px;
+            padding: 12px 16px;
+            max-width: 80%;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .user-bubble {
+            background-color: #e9f5ff;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-bubble {
+            background-color: #f0f0f0;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .game-card {
+            perspective: 1000px;
+            width: 120px;
+            height: 120px;
+            margin: 10px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        
+        .game-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .game-card-front, .game-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .game-card-front {
+            background-color: #4f46e5;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .game-card-back {
+            background-color: white;
+            transform: rotateY(180deg);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .game-card-back img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+        
+        /* Zoom modal for game cards */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .zoom-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .zoom-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .zoom-close:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        
+        /* Enlarged card style */
+        .enlarged-card {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            min-height: 300px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .enlarged-card-image {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 16px;
+        }
+        
+        .enlarged-card-content {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+            width: 100%;
+            white-space: pre-line;
+        }
+        
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .toast-animation {
+            animation: fadeInOut 3s forwards;
+        }
+        
+        /* Enhanced header styles */
+        .header-container {
+            position: relative;
+            padding: 1.5rem 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .tab-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .tab-btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Animated background */
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .animated-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        /* Card styles */
+        .materi-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .materi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .materi-card-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 60%);
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.2), 0 2px 4px -1px rgba(219, 39, 119, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(219, 39, 119, 0.3), 0 4px 6px -2px rgba(219, 39, 119, 0.2);
+        }
+        
+        /* Timer display */
+        .timer-display {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Activity log indicator */
+        .activity-indicator {
+            position: fixed;
+            bottom: 6px;
+            left: 6px;
+            background-color: rgba(79, 70, 229, 0.1);
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            z-index: 30;
+        }
+        
+        .activity-indicator.active {
+            background-color: #4f46e5;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+        
+        /* Content formatting */
+        .content-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-line;
+            height: 4.5rem;
+        }
+        
+        .formatted-content {
+            white-space: pre-line;
+        }
+        
+        /* Tab visibility indicator */
+        .tab-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-active {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #065f46;
+        }
+        
+        .tab-inactive {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #991b1b;
+        }
+    </style>
+<style>
+    .emergency-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: all 0.2s;
+    }
+    .emergency-btn.active {
+        background-color: #16a34a !important;
+        color: white !important;
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+</style>
+
 </head>
 <body>
-
-<div id="pauseIndicator" 
-     style="display:none; position:fixed; top:10px; right:10px; background:#facc15; color:#000; 
-            padding:5px 10px; border-radius:6px; font-size:14px; z-index:1000;">
-    ⏸ Paused
-</div>
-
     <!-- Background Bubbles -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div class="bubble" style="width: 100px; height: 100px; top: 10%; left: 5%; animation-delay: 0s; background-color: rgba(129, 140, 248, 0.2);"></div>
@@ -516,8 +948,8 @@
             </div>
             
             <!-- Navigation Tabs -->
-            <div class="flex justify-center -mt-6 overflow-x-auto px-2">
-                <div class="bg-white rounded-full p-1 shadow-lg flex space-x-2 whitespace-nowrap">
+            <div class="flex justify-center -mt-6">
+                <div class="bg-white rounded-full p-1 shadow-lg flex">
                     <button id="materiTab" class="tab-btn bg-indigo-600 text-white px-6 py-2 rounded-full font-bold flex items-center">
                         <i class="fas fa-book mr-2"></i>
                         Materi Belajar
@@ -633,32 +1065,32 @@
         </div>
 
         <!-- AR Section -->
+
 <section id="arSection" class="hidden mb-12">
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
-        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb"
-            class="bg-green-500 hover:bg-green-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8">
+        <a href="https://mywebar.com/p/Project_3_czoqzm75eb" target="_blank" rel="noopener noreferrer"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
             <i class="fas fa-plus text-3xl mb-2"></i>
             Penjumlahan
-        </button>
-        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb5765"
-            class="bg-red-500 hover:bg-red-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+        </a>
+        <a href="https://mywebar.com/p/Project_3_czoqzm75eb5765" target="_blank" rel="noopener noreferrer"
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
             <i class="fas fa-minus text-3xl mb-2"></i>
             Pengurangan
-        </button>
-        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb0506"
-            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+        </a>
+        <a href="https://mywebar.com/p/Project_3_czoqzm75eb0506" target="_blank" rel="noopener noreferrer"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
             <i class="fas fa-times text-3xl mb-2"></i>
             Perkalian
-        </button>
-        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb05067567"
-            class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+        </a>
+        <a href="https://mywebar.com/p/Project_3_czoqzm75eb05067567" target="_blank" rel="noopener noreferrer"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center">
             <i class="fas fa-divide text-3xl mb-2"></i>
             Pembagian
-        </button>
+        </a>
     </div>
 </section>
 
-</div>
 
 <!-- Footer -->
         <footer class="mt-12 text-center text-gray-600 py-4 border-t border-gray-200">
@@ -876,7 +1308,7 @@ const closeArModal = document.getElementById('closeArModal');
 
             // Tab functionality
             materiTab.addEventListener('click', () => {
-                showSection('materiSection');
+                materiSection.classList.remove('hidden');
                 gameSection.classList.add('hidden');
                 materiTab.classList.add('bg-indigo-600', 'text-white');
                 materiTab.classList.remove('bg-white', 'text-gray-700');
@@ -887,7 +1319,7 @@ const closeArModal = document.getElementById('closeArModal');
             
             gameTab.addEventListener('click', () => {
                 materiSection.classList.add('hidden');
-                showSection('gameSection');
+                gameSection.classList.remove('hidden');
                 materiTab.classList.add('bg-white', 'text-gray-700');
                 materiTab.classList.remove('bg-indigo-600', 'text-white');
                 gameTab.classList.add('bg-pink-600', 'text-white');
@@ -896,12 +1328,11 @@ const closeArModal = document.getElementById('closeArModal');
             });
 
             
-    
     // AR Tab functionality
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
         gameSection.classList.add('hidden');
-        showSection('arSection');
+        arSection.classList.remove('hidden');
 
         materiTab.classList.add('bg-white','text-gray-700');
         materiTab.classList.remove('bg-indigo-600','text-white');
@@ -911,26 +1342,6 @@ const closeArModal = document.getElementById('closeArModal');
         arTab.classList.remove('bg-white','text-gray-700');
 
         logActivity('view_ar_tab');
-    });
-
-    // AR Button handlers (open in new tab)
-    arButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const url = btn.getAttribute('data-url');
-            window.open(url, "_blank");
-        });
-    });
-
-    closeArModal.addEventListener('click', () => {
-        arModal.classList.add('hidden');
-        arIframe.src = "";
-    });
-
-    arModal.addEventListener('click', (e) => {
-        if (e.target === arModal) {
-            arModal.classList.add('hidden');
-            arIframe.src = "";
-        }
     });
 
     // Game functionality
@@ -986,8 +1397,6 @@ const closeArModal = document.getElementById('closeArModal');
                 tabStatus.innerHTML = '<i class="fas fa-eye mr-1"></i> Aktif';
                 tabStatus.classList.remove('tab-inactive');
                 tabStatus.classList.add('tab-active');
-                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'none';
-                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'none';
                 
                 // Calculate time spent while away
                 if (userData.lastActiveTime) {
@@ -1029,8 +1438,6 @@ const closeArModal = document.getElementById('closeArModal');
                 tabStatus.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Tidak Aktif';
                 tabStatus.classList.remove('tab-active');
                 tabStatus.classList.add('tab-inactive');
-                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'block';
-                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'block';
                 
                 // Pause timer
                 if (userData.timerInterval) {
@@ -1132,7 +1539,12 @@ const closeArModal = document.getElementById('closeArModal');
         }
         
         // Update timer display
-        :${minutes}:${secs}`;
+        function updateTimerDisplay(seconds) {
+            const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            
+            timeSpent.textContent = `${hours}:${minutes}:${secs}`;
         }
 
         // Save time spent to spreadsheet
@@ -1230,7 +1642,7 @@ const closeArModal = document.getElementById('closeArModal');
                         <p class="text-gray-600 content-preview mb-4">${contentPreview}</p>
                         <button class="btn-primary text-white px-4 py-2 rounded-lg transition duration-300 w-full flex items-center justify-center">
                             <i class="fas fa-book-reader mr-2"></i>
-                            Baca Materi
+                            Baca Cerita
                         </button>
                     </div>
                 `;
@@ -1268,13 +1680,20 @@ const closeArModal = document.getElementById('closeArModal');
                         <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
                     </div>
                 `;
-            } else if (mediaUrl.includes('heyzine.com')) {
-                // Heyzine embed
-                modalMediaContainer.innerHTML = `
-                    <iframe allowfullscreen="allowfullscreen" allow="clipboard-write" scrolling="no"
-                            class="fp-iframe" src="${mediaUrl}"
-                            style="border: 0px; width: 100%; height: 400px;"></iframe>
-                `;
+			    } else if (mediaUrl.includes('heyzine.com') || mediaUrl.includes('flipbook')) {
+        // Heyzine flipbook - show as iframe
+        modalMediaContainer.innerHTML = `
+            <div class="w-full h-96 rounded-lg overflow-hidden shadow-lg">
+                <iframe 
+                    allowfullscreen="allowfullscreen" 
+                    allow="clipboard-write" 
+                    scrolling="no" 
+                    class="w-full h-full" 
+                    src="${mediaUrl}" 
+                    style="border: 1px solid lightgray;">
+                </iframe>
+            </div>
+        `;
             } else if (mediaUrl) {
                 // Other URL
                 modalMediaContainer.innerHTML = `
@@ -1382,12 +1801,11 @@ const closeArModal = document.getElementById('closeArModal');
         }
 
         
-    
     // AR Tab functionality
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
         gameSection.classList.add('hidden');
-        showSection('arSection');
+        arSection.classList.remove('hidden');
 
         materiTab.classList.add('bg-white','text-gray-700');
         materiTab.classList.remove('bg-indigo-600','text-white');
@@ -1397,26 +1815,6 @@ const closeArModal = document.getElementById('closeArModal');
         arTab.classList.remove('bg-white','text-gray-700');
 
         logActivity('view_ar_tab');
-    });
-
-    // AR Button handlers (open in new tab)
-    arButtons.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const url = btn.getAttribute('data-url');
-            window.open(url, "_blank");
-        });
-    });
-
-    closeArModal.addEventListener('click', () => {
-        arModal.classList.add('hidden');
-        arIframe.src = "";
-    });
-
-    arModal.addEventListener('click', (e) => {
-        if (e.target === arModal) {
-            arModal.classList.add('hidden');
-            arIframe.src = "";
-        }
     });
 
     // Game functionality
@@ -1939,8 +2337,7 @@ const closeArModal = document.getElementById('closeArModal');
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
-<!-- Emergency Buttons -->
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><!-- Emergency Buttons -->
 <div class="fixed bottom-4 left-4 flex flex-col space-y-3 z-50">
     <button id="lampu_plus" onclick="toggleLampu('lampu_plus')" 
         class="emergency-btn bg-gray-200 hover:bg-gray-300 text-green-700">
@@ -1959,27 +2356,6 @@ const closeArModal = document.getElementById('closeArModal');
         <i class="fas fa-divide"></i>
     </button>
 </div>
-
-<style>
-    .emergency-btn {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        font-size: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        transition: all 0.2s;
-    }
-    .emergency-btn.active {
-        background-color: #16a34a !important;
-        color: white !important;
-        transform: scale(1.1);
-        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
-    }
-</style>
-
 <script>
     const activeButtons = new Set();
 
@@ -2028,82 +2404,6 @@ const closeArModal = document.getElementById('closeArModal');
 
     setInterval(loadStatus, 1000);
     window.onload = loadStatus;
-</script>
-
-
-
-
-
-
-
-
-<script>
-function showSection(sectionId) {
-    const sections = ['materiSection', 'gameSection', 'arSection'];
-    sections.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-            if (id === sectionId) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
-        }
-    });
-}
-document.addEventListener("DOMContentLoaded", () => {
-    const materiTab = document.getElementById('materiTab');
-    const gameTab = document.getElementById('gameTab');
-    const arTab = document.getElementById('arTab');
-    if (materiTab) materiTab.onclick = () => showSection('materiSection');
-    if (gameTab) gameTab.onclick = () => showSection('gameSection');
-    if (arTab) arTab.onclick = () => showSection('arSection');
-});
-</script>
-
-
-
-
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-    function showSection(sectionId) {
-        const sections = ['materiSection', 'gameSection', 'arSection'];
-        sections.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) {
-                if (id === sectionId) {
-                    el.classList.remove('hidden');
-                } else {
-                    el.classList.add('hidden');
-                }
-            }
-        });
-    }
-
-    const materiTab = document.getElementById('materiTab');
-    const gameTab = document.getElementById('gameTab');
-    const arTab = document.getElementById('arTab');
-
-    if (materiTab) materiTab.addEventListener('click', () => showSection('materiSection'));
-    if (gameTab) gameTab.addEventListener('click', () => showSection('gameSection'));
-    if (arTab) arTab.addEventListener('click', () => showSection('arSection'));
-});
-</script>
-
-
-<script>
-function updateTimerDisplay(seconds) {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    const el = document.getElementById("waktuBelajar");
-    if (el) {
-        el.textContent = String(hours).padStart(2,'0') + ":" +
-                         String(minutes).padStart(2,'0') + ":" +
-                         String(secs).padStart(2,'0');
-    }
-}
 </script>
 
 </body>
