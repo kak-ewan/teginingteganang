@@ -429,6 +429,13 @@
     </style>
 </head>
 <body>
+
+<div id="pauseIndicator" 
+     style="display:none; position:fixed; top:10px; right:10px; background:#facc15; color:#000; 
+            padding:5px 10px; border-radius:6px; font-size:14px; z-index:1000;">
+    ⏸ Paused
+</div>
+
     <!-- Background Bubbles -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div class="bubble" style="width: 100px; height: 100px; top: 10%; left: 5%; animation-delay: 0s; background-color: rgba(129, 140, 248, 0.2);"></div>
@@ -869,7 +876,7 @@ const closeArModal = document.getElementById('closeArModal');
 
             // Tab functionality
             materiTab.addEventListener('click', () => {
-                materiSection.classList.remove('hidden');
+                showSection('materiSection');
                 gameSection.classList.add('hidden');
                 materiTab.classList.add('bg-indigo-600', 'text-white');
                 materiTab.classList.remove('bg-white', 'text-gray-700');
@@ -880,7 +887,7 @@ const closeArModal = document.getElementById('closeArModal');
             
             gameTab.addEventListener('click', () => {
                 materiSection.classList.add('hidden');
-                gameSection.classList.remove('hidden');
+                showSection('gameSection');
                 materiTab.classList.add('bg-white', 'text-gray-700');
                 materiTab.classList.remove('bg-indigo-600', 'text-white');
                 gameTab.classList.add('bg-pink-600', 'text-white');
@@ -894,7 +901,7 @@ const closeArModal = document.getElementById('closeArModal');
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
         gameSection.classList.add('hidden');
-        arSection.classList.remove('hidden');
+        showSection('arSection');
 
         materiTab.classList.add('bg-white','text-gray-700');
         materiTab.classList.remove('bg-indigo-600','text-white');
@@ -979,6 +986,8 @@ const closeArModal = document.getElementById('closeArModal');
                 tabStatus.innerHTML = '<i class="fas fa-eye mr-1"></i> Aktif';
                 tabStatus.classList.remove('tab-inactive');
                 tabStatus.classList.add('tab-active');
+                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'none';
+                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'none';
                 
                 // Calculate time spent while away
                 if (userData.lastActiveTime) {
@@ -1020,6 +1029,8 @@ const closeArModal = document.getElementById('closeArModal');
                 tabStatus.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Tidak Aktif';
                 tabStatus.classList.remove('tab-active');
                 tabStatus.classList.add('tab-inactive');
+                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'block';
+                const _pi = document.getElementById('pauseIndicator'); if (_pi) _pi.style.display = 'block';
                 
                 // Pause timer
                 if (userData.timerInterval) {
@@ -1121,12 +1132,7 @@ const closeArModal = document.getElementById('closeArModal');
         }
         
         // Update timer display
-        function updateTimerDisplay(seconds) {
-            const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
-            const secs = (seconds % 60).toString().padStart(2, '0');
-            
-            timeSpent.textContent = `${hours}:${minutes}:${secs}`;
+        :${minutes}:${secs}`;
         }
 
         // Save time spent to spreadsheet
@@ -1262,6 +1268,13 @@ const closeArModal = document.getElementById('closeArModal');
                         <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
                     </div>
                 `;
+            } else if (mediaUrl.includes('heyzine.com')) {
+                // Heyzine embed
+                modalMediaContainer.innerHTML = `
+                    <iframe allowfullscreen="allowfullscreen" allow="clipboard-write" scrolling="no"
+                            class="fp-iframe" src="${mediaUrl}"
+                            style="border: 0px; width: 100%; height: 400px;"></iframe>
+                `;
             } else if (mediaUrl) {
                 // Other URL
                 modalMediaContainer.innerHTML = `
@@ -1374,7 +1387,7 @@ const closeArModal = document.getElementById('closeArModal');
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
         gameSection.classList.add('hidden');
-        arSection.classList.remove('hidden');
+        showSection('arSection');
 
         materiTab.classList.add('bg-white','text-gray-700');
         materiTab.classList.remove('bg-indigo-600','text-white');
@@ -1928,7 +1941,7 @@ const closeArModal = document.getElementById('closeArModal');
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <!-- Emergency Buttons -->
-<div class="fixed bottom-4 right-4 flex flex-col space-y-3 z-50">
+<div class="fixed bottom-4 left-4 flex flex-col space-y-3 z-50">
     <button id="lampu_plus" onclick="toggleLampu('lampu_plus')" 
         class="emergency-btn bg-gray-200 hover:bg-gray-300 text-green-700">
         <i class="fas fa-plus"></i>
@@ -2015,6 +2028,82 @@ const closeArModal = document.getElementById('closeArModal');
 
     setInterval(loadStatus, 1000);
     window.onload = loadStatus;
+</script>
+
+
+
+
+
+
+
+
+<script>
+function showSection(sectionId) {
+    const sections = ['materiSection', 'gameSection', 'arSection'];
+    sections.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            if (id === sectionId) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+        }
+    });
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const materiTab = document.getElementById('materiTab');
+    const gameTab = document.getElementById('gameTab');
+    const arTab = document.getElementById('arTab');
+    if (materiTab) materiTab.onclick = () => showSection('materiSection');
+    if (gameTab) gameTab.onclick = () => showSection('gameSection');
+    if (arTab) arTab.onclick = () => showSection('arSection');
+});
+</script>
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    function showSection(sectionId) {
+        const sections = ['materiSection', 'gameSection', 'arSection'];
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                if (id === sectionId) {
+                    el.classList.remove('hidden');
+                } else {
+                    el.classList.add('hidden');
+                }
+            }
+        });
+    }
+
+    const materiTab = document.getElementById('materiTab');
+    const gameTab = document.getElementById('gameTab');
+    const arTab = document.getElementById('arTab');
+
+    if (materiTab) materiTab.addEventListener('click', () => showSection('materiSection'));
+    if (gameTab) gameTab.addEventListener('click', () => showSection('gameSection'));
+    if (arTab) arTab.addEventListener('click', () => showSection('arSection'));
+});
+</script>
+
+
+<script>
+function updateTimerDisplay(seconds) {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    const el = document.getElementById("waktuBelajar");
+    if (el) {
+        el.textContent = String(hours).padStart(2,'0') + ":" +
+                         String(minutes).padStart(2,'0') + ":" +
+                         String(secs).padStart(2,'0');
+    }
+}
 </script>
 
 </body>
