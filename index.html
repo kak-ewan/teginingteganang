@@ -519,6 +519,14 @@
                         <i class="fas fa-gamepad mr-2"></i>
                         Game Seru
                     </button>
+                    <button id="arTab" class="tab-btn bg-white text-gray-700 px-6 py-2 rounded-full font-bold flex items-center">
+                        <i class="fas fa-cube mr-2"></i>
+                        AR
+                    </button>
+                    <!-- gameTab inserted -->
+                        <i class="fas fa-gamepad mr-2"></i>
+                        Game Seru
+                    </button>
                 </div>
             </div>
         </header>
@@ -617,7 +625,43 @@
             </section>
         </div>
 
-        <!-- Footer -->
+        <!-- AR Section -->
+<section id="arSection" class="hidden mb-12">
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8">
+        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb"
+            class="bg-green-500 hover:bg-green-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+            <i class="fas fa-plus text-3xl mb-2"></i>
+            Penjumlahan
+        </button>
+        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb5765"
+            class="bg-red-500 hover:bg-red-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+            <i class="fas fa-minus text-3xl mb-2"></i>
+            Pengurangan
+        </button>
+        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb0506"
+            class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+            <i class="fas fa-times text-3xl mb-2"></i>
+            Perkalian
+        </button>
+        <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb05067567"
+            class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
+            <i class="fas fa-divide text-3xl mb-2"></i>
+            Pembagian
+        </button>
+    </div>
+</section>
+
+<!-- AR Modal -->
+<div id="arModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
+    <div class="relative bg-white rounded-2xl w-[95%] h-[90%] shadow-2xl overflow-hidden">
+        <button id="closeArModal" class="absolute top-3 right-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 z-10">
+            <i class="fas fa-times"></i>
+        </button>
+        <iframe id="arIframe" src="" class="w-full h-full border-0 rounded-2xl"></iframe>
+    </div>
+</div>
+
+<!-- Footer -->
         <footer class="mt-12 text-center text-gray-600 py-4 border-t border-gray-200">
             <p class="flex items-center justify-center">
                 <i class="fas fa-code mr-2"></i>
@@ -763,6 +807,14 @@
         const materiTab = document.getElementById('materiTab');
         const gameTab = document.getElementById('gameTab');
         const materiSection = document.getElementById('materiSection');
+
+const arTab = document.getElementById('arTab');
+const arSection = document.getElementById('arSection');
+const arButtons = document.querySelectorAll('.ar-btn');
+const arModal = document.getElementById('arModal');
+const arIframe = document.getElementById('arIframe');
+const closeArModal = document.getElementById('closeArModal');
+
         const gameSection = document.getElementById('gameSection');
         const startGameBtn = document.getElementById('startGameBtn');
         const gameBoard = document.getElementById('gameBoard');
@@ -844,7 +896,46 @@
                 logActivity('view_game_tab');
             });
 
-            // Game functionality
+            
+    // AR Tab functionality
+    arTab.addEventListener('click', () => {
+        materiSection.classList.add('hidden');
+        gameSection.classList.add('hidden');
+        arSection.classList.remove('hidden');
+
+        materiTab.classList.add('bg-white','text-gray-700');
+        materiTab.classList.remove('bg-indigo-600','text-white');
+        gameTab.classList.add('bg-white','text-gray-700');
+        gameTab.classList.remove('bg-pink-600','text-white');
+        arTab.classList.add('bg-indigo-600','text-white');
+        arTab.classList.remove('bg-white','text-gray-700');
+
+        logActivity('view_ar_tab');
+    });
+
+    // AR Button handlers
+    arButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.getAttribute('data-url');
+            arIframe.src = url;
+            arModal.classList.remove('hidden');
+        });
+    });
+
+    // Close AR Modal
+    closeArModal.addEventListener('click', () => {
+        arModal.classList.add('hidden');
+        arIframe.src = "";
+    });
+
+    arModal.addEventListener('click', (e) => {
+        if (e.target === arModal) {
+            arModal.classList.add('hidden');
+            arIframe.src = "";
+        }
+    });
+
+    // Game functionality
             startGameBtn.addEventListener('click', startGame);
 
             // Zoom modal
@@ -1157,54 +1248,45 @@
         }
 
         // Open material modal
-// Open material modal
-function openMaterialModal(item) {
-    modalTitle.textContent = item.Materi;
-
-    // Handle media content
-    modalMediaContainer.innerHTML = '';
-    const mediaUrl = item['Url Gambar/Video'] || '';
-
-    if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
-        // YouTube video
-        const videoId = getYouTubeVideoId(mediaUrl);
-        modalMediaContainer.innerHTML = `
-            <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
-                <i class="fas fa-play-circle mr-2"></i>
-                Tonton Video
-            </a>
-        `;
-    } else if (mediaUrl.includes('heyzine.com/flip-book/')) {
-        // Heyzine embed
-        modalMediaContainer.innerHTML = `
-            <iframe allowfullscreen="allowfullscreen" allow="clipboard-write" scrolling="no" 
-                class="fp-iframe" src="${mediaUrl}" 
-                style="border:0px; width:100%; height:400px;"></iframe>
-        `;
-    } else if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
-        // Image
-        modalMediaContainer.innerHTML = `
-            <div class="rounded-lg overflow-hidden shadow-lg">
-                <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
-            </div>
-        `;
-    } else if (mediaUrl) {
-        // Other URL
-        modalMediaContainer.innerHTML = `
-            <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
-                <i class="fas fa-external-link-alt mr-2"></i>
-                Buka Tautan
-            </a>
-        `;
-    }
-
-    // Set content
-    modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
-
-    // Show modal
-    materialModal.classList.remove('hidden');
-}
-
+        function openMaterialModal(item) {
+            modalTitle.textContent = item.Materi;
+            
+            // Handle media content
+            modalMediaContainer.innerHTML = '';
+            const mediaUrl = item['Url Gambar/Video'] || '';
+            
+            if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+                // YouTube video - show as button instead of embedding
+                const videoId = getYouTubeVideoId(mediaUrl);
+                modalMediaContainer.innerHTML = `
+                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-play-circle mr-2"></i>
+                        Tonton Video
+                    </a>
+                `;
+            } else if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                // Image
+                modalMediaContainer.innerHTML = `
+                    <div class="rounded-lg overflow-hidden shadow-lg">
+                        <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
+                    </div>
+                `;
+            } else if (mediaUrl) {
+                // Other URL
+                modalMediaContainer.innerHTML = `
+                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Buka Tautan
+                    </a>
+                `;
+            }
+            
+            // Set content with preserved formatting
+            modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
+            
+            // Show modal
+            materialModal.classList.remove('hidden');
+        }
 
         // Extract YouTube video ID
         function getYouTubeVideoId(url) {
@@ -1295,7 +1377,46 @@ function openMaterialModal(item) {
             }, duration);
         }
 
-        // Game functionality
+        
+    // AR Tab functionality
+    arTab.addEventListener('click', () => {
+        materiSection.classList.add('hidden');
+        gameSection.classList.add('hidden');
+        arSection.classList.remove('hidden');
+
+        materiTab.classList.add('bg-white','text-gray-700');
+        materiTab.classList.remove('bg-indigo-600','text-white');
+        gameTab.classList.add('bg-white','text-gray-700');
+        gameTab.classList.remove('bg-pink-600','text-white');
+        arTab.classList.add('bg-indigo-600','text-white');
+        arTab.classList.remove('bg-white','text-gray-700');
+
+        logActivity('view_ar_tab');
+    });
+
+    // AR Button handlers
+    arButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.getAttribute('data-url');
+            arIframe.src = url;
+            arModal.classList.remove('hidden');
+        });
+    });
+
+    // Close AR Modal
+    closeArModal.addEventListener('click', () => {
+        arModal.classList.add('hidden');
+        arIframe.src = "";
+    });
+
+    arModal.addEventListener('click', (e) => {
+        if (e.target === arModal) {
+            arModal.classList.add('hidden');
+            arIframe.src = "";
+        }
+    });
+
+    // Game functionality
         function startGame() {
             // Reset game state
             gameState.isPlaying = true;
