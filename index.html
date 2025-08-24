@@ -791,7 +791,7 @@
         document.body.appendChild(confettiContainer);
 
         // API URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbw8f1KHefdTW5ZR6hgNoe4bRMCWXcONvZenRdQNZs0nhNuT-qdbGIZzhFHRV8KPuHqg/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxu4_38Ogms1g0zCsmhZ9GF2OsjdKNsTg-g3UfdKFi45dU3m_n-ISF-nRNOMZf3tPWUXQ/exec';
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
@@ -1157,62 +1157,54 @@
         }
 
         // Open material modal
-        
-        // Open material modal
-        function openMaterialModal(item) {
-            modalTitle.textContent = item.Materi;
-            
-            // Handle media content
-            modalMediaContainer.innerHTML = '';
-            const mediaUrl = item['Url Gambar/Video'] || '';
-            
-            if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
-                // YouTube video - show as button instead of embedding
-                modalMediaContainer.innerHTML = `
-                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
-                        <i class="fas fa-play-circle mr-2"></i>
-                        Tonton Video
-                    </a>
-                `;
-            } else if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
-                // Image
-                modalMediaContainer.innerHTML = `
-                    <div class="rounded-lg overflow-hidden shadow-lg">
-                        <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
-                    </div>
-                `;
-            } else if (mediaUrl.includes("heyzine.com/flip-book/")) {
-                // Heyzine Flipbook Embed
-                modalMediaContainer.innerHTML = `
-                    <iframe allowfullscreen="allowfullscreen" allow="clipboard-write"
-                        scrolling="no" class="fp-iframe"
-                        src="${mediaUrl}"
-                        style="border: 1px solid lightgray; width: 100%; height: 400px; border-radius: 12px;">
-                    </iframe>
-                `;
-            } else if (mediaUrl) {
-                // Other URL
-                modalMediaContainer.innerHTML = `
-                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
-                        <i class="fas fa-external-link-alt mr-2"></i>
-                        Buka Tautan
-                    </a>
-                `;
-            }
-            
-            // Set content with preserved formatting
-            modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
-            
-            // Show modal
-            materialModal.classList.remove('hidden');
-        }
+// Open material modal
+function openMaterialModal(item) {
+    modalTitle.textContent = item.Materi;
 
-            // Set content with preserved formatting
-            modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
-            
-            // Show modal
-            materialModal.classList.remove('hidden');
-        }
+    // Handle media content
+    modalMediaContainer.innerHTML = '';
+    const mediaUrl = item['Url Gambar/Video'] || '';
+
+    if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+        // YouTube video
+        const videoId = getYouTubeVideoId(mediaUrl);
+        modalMediaContainer.innerHTML = `
+            <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                <i class="fas fa-play-circle mr-2"></i>
+                Tonton Video
+            </a>
+        `;
+    } else if (mediaUrl.includes('heyzine.com/flip-book/')) {
+        // Heyzine embed
+        modalMediaContainer.innerHTML = `
+            <iframe allowfullscreen="allowfullscreen" allow="clipboard-write" scrolling="no" 
+                class="fp-iframe" src="${mediaUrl}" 
+                style="border:0px; width:100%; height:400px;"></iframe>
+        `;
+    } else if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+        // Image
+        modalMediaContainer.innerHTML = `
+            <div class="rounded-lg overflow-hidden shadow-lg">
+                <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
+            </div>
+        `;
+    } else if (mediaUrl) {
+        // Other URL
+        modalMediaContainer.innerHTML = `
+            <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                <i class="fas fa-external-link-alt mr-2"></i>
+                Buka Tautan
+            </a>
+        `;
+    }
+
+    // Set content
+    modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
+
+    // Show modal
+    materialModal.classList.remove('hidden');
+}
+
 
         // Extract YouTube video ID
         function getYouTubeVideoId(url) {
