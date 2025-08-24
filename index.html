@@ -509,8 +509,8 @@
             </div>
             
             <!-- Navigation Tabs -->
-            <div class="flex justify-center -mt-6">
-                <div class="bg-white rounded-full p-1 shadow-lg flex">
+            <div class="flex justify-center -mt-6 overflow-x-auto px-2">
+                <div class="bg-white rounded-full p-1 shadow-lg flex space-x-2 whitespace-nowrap">
                     <button id="materiTab" class="tab-btn bg-indigo-600 text-white px-6 py-2 rounded-full font-bold flex items-center">
                         <i class="fas fa-book mr-2"></i>
                         Materi Belajar
@@ -627,7 +627,7 @@
 
         <!-- AR Section -->
 <section id="arSection" class="hidden mb-12">
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 mt-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
         <button data-url="https://mywebar.com/p/Project_3_czoqzm75eb"
             class="bg-green-500 hover:bg-green-600 text-white font-bold py-6 rounded-2xl shadow-lg flex flex-col items-center justify-center ar-btn">
             <i class="fas fa-plus text-3xl mb-2"></i>
@@ -651,14 +651,6 @@
     </div>
 </section>
 
-<!-- AR Modal -->
-<div id="arModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden">
-    <div class="relative bg-white rounded-2xl w-[95%] h-[90%] shadow-2xl overflow-hidden">
-        <button id="closeArModal" class="absolute top-3 right-3 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-full p-2 z-10">
-            <i class="fas fa-times"></i>
-        </button>
-        <iframe id="arIframe" src="" class="w-full h-full border-0 rounded-2xl"></iframe>
-    </div>
 </div>
 
 <!-- Footer -->
@@ -897,6 +889,7 @@ const closeArModal = document.getElementById('closeArModal');
             });
 
             
+    
     // AR Tab functionality
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
@@ -913,16 +906,14 @@ const closeArModal = document.getElementById('closeArModal');
         logActivity('view_ar_tab');
     });
 
-    // AR Button handlers
+    // AR Button handlers (open in new tab)
     arButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const url = btn.getAttribute('data-url');
-            arIframe.src = url;
-            arModal.classList.remove('hidden');
+            window.open(url, "_blank");
         });
     });
 
-    // Close AR Modal
     closeArModal.addEventListener('click', () => {
         arModal.classList.add('hidden');
         arIframe.src = "";
@@ -1378,6 +1369,7 @@ const closeArModal = document.getElementById('closeArModal');
         }
 
         
+    
     // AR Tab functionality
     arTab.addEventListener('click', () => {
         materiSection.classList.add('hidden');
@@ -1394,16 +1386,14 @@ const closeArModal = document.getElementById('closeArModal');
         logActivity('view_ar_tab');
     });
 
-    // AR Button handlers
+    // AR Button handlers (open in new tab)
     arButtons.forEach(btn => {
         btn.addEventListener('click', () => {
             const url = btn.getAttribute('data-url');
-            arIframe.src = url;
-            arModal.classList.remove('hidden');
+            window.open(url, "_blank");
         });
     });
 
-    // Close AR Modal
     closeArModal.addEventListener('click', () => {
         arModal.classList.add('hidden');
         arIframe.src = "";
@@ -1936,5 +1926,96 @@ const closeArModal = document.getElementById('closeArModal');
             }
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+<!-- Emergency Buttons -->
+<div class="fixed bottom-4 right-4 flex flex-col space-y-3 z-50">
+    <button id="lampu_plus" onclick="toggleLampu('lampu_plus')" 
+        class="emergency-btn bg-gray-200 hover:bg-gray-300 text-green-700">
+        <i class="fas fa-plus"></i>
+    </button>
+    <button id="lampu_minus" onclick="toggleLampu('lampu_minus')" 
+        class="emergency-btn bg-gray-200 hover:bg-gray-300 text-red-700">
+        <i class="fas fa-minus"></i>
+    </button>
+    <button id="lampu_times" onclick="toggleLampu('lampu_times')" 
+        class="emergency-btn bg-gray-200 hover:bg-gray-300 text-blue-700">
+        <i class="fas fa-times"></i>
+    </button>
+    <button id="lampu_divide" onclick="toggleLampu('lampu_divide')" 
+        class="emergency-btn bg-gray-200 hover:bg-gray-300 text-yellow-700">
+        <i class="fas fa-divide"></i>
+    </button>
+</div>
+
+<style>
+    .emergency-btn {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        font-size: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: all 0.2s;
+    }
+    .emergency-btn.active {
+        background-color: #16a34a !important;
+        color: white !important;
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    }
+</style>
+
+<script>
+    const activeButtons = new Set();
+
+    function toggleLampu(tombolId) {
+        const tombol = document.getElementById(tombolId);
+        const status = activeButtons.has(tombolId) ? 'off' : 'on';
+
+        if (status === 'on') {
+            tombol.classList.add('active');
+            activeButtons.add(tombolId);
+        } else {
+            tombol.classList.remove('active');
+            activeButtons.delete(tombolId);
+        }
+
+        updateLampuStatus(tombolId, status);
+    }
+
+    function updateLampuStatus(lampuId, status) {
+        fetch('https://etno-math.com/emergency/update_lampu.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `lampu_id=${lampuId}&status=${status}`
+        });
+    }
+
+    function loadStatus() {
+        fetch('https://etno-math.com/emergency/get_lampu_status.php')
+            .then(response => response.json())
+            .then(statuses => {
+                statuses.forEach(status => {
+                    const tombol = document.getElementById(status.lampu_id);
+                    if (tombol) {
+                        if (status.status === 'on') {
+                            tombol.classList.add('active');
+                            activeButtons.add(status.lampu_id);
+                        } else {
+                            tombol.classList.remove('active');
+                            activeButtons.delete(status.lampu_id);
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching lampu status:', error));
+    }
+
+    setInterval(loadStatus, 1000);
+    window.onload = loadStatus;
+</script>
+
+</body>
 </html>
