@@ -791,7 +791,7 @@
         document.body.appendChild(confettiContainer);
 
         // API URL
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxu4_38Ogms1g0zCsmhZ9GF2OsjdKNsTg-g3UfdKFi45dU3m_n-ISF-nRNOMZf3tPWUXQ/exec';
+        const API_URL = 'https://script.google.com/macros/s/AKfycbw8f1KHefdTW5ZR6hgNoe4bRMCWXcONvZenRdQNZs0nhNuT-qdbGIZzhFHRV8KPuHqg/exec';
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
@@ -1168,7 +1168,6 @@
             
             if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
                 // YouTube video - show as button instead of embedding
-                const videoId = getYouTubeVideoId(mediaUrl);
                 modalMediaContainer.innerHTML = `
                     <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
                         <i class="fas fa-play-circle mr-2"></i>
@@ -1207,6 +1206,7 @@
             // Show modal
             materialModal.classList.remove('hidden');
         }
+
             
             // Set content with preserved formatting
             modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
