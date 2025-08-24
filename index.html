@@ -1,0 +1,1828 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belajar Bersama Ewan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8fafc;
+            overflow-x: hidden;
+        }
+        
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            animation: float 8s infinite ease-in-out;
+            z-index: 0;
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+            }
+            50% {
+                transform: translateY(-20px) translateX(10px);
+            }
+        }
+        
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .modal {
+            transition: opacity 0.3s ease;
+        }
+        
+        .chat-bubble {
+            border-radius: 18px;
+            padding: 12px 16px;
+            max-width: 80%;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        
+        .user-bubble {
+            background-color: #e9f5ff;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .bot-bubble {
+            background-color: #f0f0f0;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .game-card {
+            perspective: 1000px;
+            width: 120px;
+            height: 120px;
+            margin: 10px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        
+        .game-card.flipped {
+            transform: rotateY(180deg);
+        }
+        
+        .game-card-front, .game-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .game-card-front {
+            background-color: #4f46e5;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .game-card-back {
+            background-color: white;
+            transform: rotateY(180deg);
+            font-size: 18px;
+            font-weight: bold;
+            padding: 10px;
+            text-align: center;
+            overflow: hidden;
+        }
+        
+        .game-card-back img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .bounce {
+            animation: bounce 2s infinite;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+        }
+        
+        /* Zoom modal for game cards */
+        .zoom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .zoom-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 16px;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .zoom-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .zoom-close:hover {
+            background-color: rgba(0, 0, 0, 0.2);
+            color: #333;
+        }
+        
+        /* Enlarged card style */
+        .enlarged-card {
+            width: 100%;
+            max-width: 300px;
+            height: auto;
+            min-height: 300px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .enlarged-card-image {
+            max-width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            margin-bottom: 16px;
+        }
+        
+        .enlarged-card-content {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            color: #333;
+            width: 100%;
+            white-space: pre-line;
+        }
+        
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4f46e5;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        
+        .toast-animation {
+            animation: fadeInOut 3s forwards;
+        }
+        
+        /* Enhanced header styles */
+        .header-container {
+            position: relative;
+            padding: 1.5rem 0;
+            overflow: hidden;
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, 0.3);
+        }
+        
+        .tab-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .tab-btn:hover::before {
+            transform: translateX(0);
+        }
+        
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            margin-right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        /* Animated background */
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .animated-shape {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        /* Card styles */
+        .materi-card {
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .materi-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .materi-card-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 60%);
+        }
+        
+        /* Button styles */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(79, 70, 229, 0.2);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(219, 39, 119, 0.2), 0 2px 4px -1px rgba(219, 39, 119, 0.1);
+        }
+        
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(219, 39, 119, 0.3), 0 4px 6px -2px rgba(219, 39, 119, 0.2);
+        }
+        
+        /* Timer display */
+        .timer-display {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Activity log indicator */
+        .activity-indicator {
+            position: fixed;
+            bottom: 6px;
+            left: 6px;
+            background-color: rgba(79, 70, 229, 0.1);
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            z-index: 30;
+        }
+        
+        .activity-indicator.active {
+            background-color: #4f46e5;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.7);
+            }
+            
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 10px rgba(79, 70, 229, 0);
+            }
+            
+            100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+        
+        /* Content formatting */
+        .content-preview {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            white-space: pre-line;
+            height: 4.5rem;
+        }
+        
+        .formatted-content {
+            white-space: pre-line;
+        }
+        
+        /* Tab visibility indicator */
+        .tab-status {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .tab-active {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #065f46;
+        }
+        
+        .tab-inactive {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Bubbles -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="bubble" style="width: 100px; height: 100px; top: 10%; left: 5%; animation-delay: 0s; background-color: rgba(129, 140, 248, 0.2);"></div>
+        <div class="bubble" style="width: 150px; height: 150px; top: 60%; left: 80%; animation-delay: 1s; background-color: rgba(249, 168, 212, 0.2);"></div>
+        <div class="bubble" style="width: 80px; height: 80px; top: 30%; left: 70%; animation-delay: 2s; background-color: rgba(252, 211, 77, 0.2);"></div>
+        <div class="bubble" style="width: 120px; height: 120px; top: 70%; left: 20%; animation-delay: 3s; background-color: rgba(110, 231, 183, 0.2);"></div>
+        <div class="bubble" style="width: 60px; height: 60px; top: 40%; left: 30%; animation-delay: 4s; background-color: rgba(251, 146, 60, 0.2);"></div>
+    </div>
+
+    <!-- Activity Log Indicator -->
+    <div id="activityIndicator" class="activity-indicator"></div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl transform transition-all">
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
+                    <i class="fas fa-user-graduate text-3xl text-indigo-600"></i>
+                </div>
+                <h2 class="text-3xl font-bold text-indigo-600 mb-2">Selamat Datang!</h2>
+                <p class="text-gray-600">Siapa namamu, teman belajar?</p>
+            </div>
+            <div class="mb-6 relative">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-signature text-gray-400"></i>
+                </div>
+                <input type="text" id="userName" class="w-full pl-10 pr-4 py-3 rounded-lg border-2 border-indigo-300 focus:border-indigo-500 focus:outline-none text-lg" placeholder="Masukkan namamu di sini">
+            </div>
+            <button id="startLearning" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 text-lg flex items-center justify-center">
+                <i class="fas fa-rocket mr-2"></i>
+                Mulai Belajar!
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 py-4 relative z-10">
+        <!-- Enhanced Header Design -->
+        <header class="mb-8">
+            <div class="header-container">
+                <!-- Animated background shapes -->
+                <div class="animated-bg">
+                    <div class="animated-shape" style="width: 180px; height: 180px; top: -50px; right: 10%; opacity: 0.1; animation-duration: 20s;"></div>
+                    <div class="animated-shape" style="width: 120px; height: 120px; top: 100px; left: 15%; opacity: 0.1; animation-duration: 15s;"></div>
+                    <div class="animated-shape" style="width: 80px; height: 80px; bottom: -20px; right: 30%; opacity: 0.1; animation-duration: 25s;"></div>
+                </div>
+                
+                <div class="container mx-auto px-4 py-4 relative z-10">
+                    <div class="flex flex-col md:flex-row justify-between items-center">
+                        <!-- Logo and Title -->
+                        <div class="flex items-center mb-4 md:mb-0">
+                            <div class="bg-white/10 p-3 rounded-xl mr-3">
+                                <i class="fas fa-book-open text-2xl text-white"></i>
+                            </div>
+                            <div>
+                                <h1 id="siteTitle" class="text-3xl md:text-4xl font-bold text-white">Belajar Bersama</h1>
+                                <p id="siteDescription" class="text-sm text-white/80">Loading...</p>
+                            </div>
+                        </div>
+                        
+                        <!-- User Info and Timer -->
+                        <div class="flex flex-col items-end">
+                            <div class="flex items-center mb-2">
+                                <i class="fas fa-user-circle text-white mr-2"></i>
+                                <span class="text-white font-medium">Halo, <span id="userNameDisplay" class="bg-white/20 px-3 py-1 rounded-full"></span>!</span>
+                            </div>
+                            <div class="timer-display flex items-center">
+                                <i class="fas fa-clock text-white mr-2"></i>
+                                <span class="text-white text-sm">Waktu Belajar: <span id="timeSpent" class="font-bold">00:00:00</span></span>
+                                <span id="tabStatus" class="tab-status tab-active">
+                                    <i class="fas fa-eye mr-1"></i>
+                                    Aktif
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex justify-center -mt-6">
+                <div class="bg-white rounded-full p-1 shadow-lg flex">
+                    <button id="materiTab" class="tab-btn bg-indigo-600 text-white px-6 py-2 rounded-full font-bold flex items-center">
+                        <i class="fas fa-book mr-2"></i>
+                        Materi Belajar
+                    </button>
+                    <button id="gameTab" class="tab-btn bg-white text-gray-700 px-6 py-2 rounded-full font-bold flex items-center">
+                        <i class="fas fa-gamepad mr-2"></i>
+                        Game Seru
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="flex flex-col items-center justify-center py-12">
+            <div class="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mb-4"></div>
+            <p class="text-indigo-600 font-bold text-xl">Sedang memuat...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="hidden bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-8">
+            <div class="flex items-center">
+                <i class="fas fa-exclamation-triangle mr-3"></i>
+                <p>Gagal memuat data. Silakan coba lagi nanti.</p>
+            </div>
+        </div>
+
+        <!-- Content Sections -->
+        <div id="contentSections">
+            <!-- Materi Section -->
+            <section id="materiSection" class="mb-12">
+                <div id="materiContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Materi cards will be inserted here -->
+                </div>
+            </section>
+
+            <!-- Game Section -->
+            <section id="gameSection" class="hidden">
+                <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="bg-pink-100 p-3 rounded-full mr-3">
+                            <i class="fas fa-puzzle-piece text-2xl text-pink-600"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-pink-600">Permainan Mencocokkan Kartu</h2>
+                    </div>
+                    <p class="text-gray-600 text-center mb-6">Temukan pasangan kartu yang cocok untuk mendapatkan poin!</p>
+                    
+                    <div class="flex justify-center mb-6">
+                        <button id="startGameBtn" class="btn-secondary text-white font-bold py-3 px-6 rounded-lg flex items-center">
+                            <i class="fas fa-play mr-2"></i>
+                            Mulai Permainan
+                        </button>
+                    </div>
+                    
+                    <div id="gameBoard" class="flex flex-wrap justify-center mb-8">
+                        <!-- Game cards will be inserted here -->
+                    </div>
+                    
+                    <div class="bg-indigo-50 rounded-xl p-4 mb-6">
+                        <div class="flex flex-col md:flex-row justify-between items-center">
+                            <div class="flex items-center mb-3 md:mb-0">
+                                <div class="flex items-center mr-4">
+                                    <i class="fas fa-star text-yellow-500 mr-2"></i>
+                                    <p class="text-gray-700">Skor: <span id="currentScore" class="font-bold text-indigo-600">0</span></p>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-hourglass-half text-indigo-500 mr-2"></i>
+                                    <p class="text-gray-700">Waktu: <span id="gameTimer" class="font-bold text-indigo-600">60</span> detik</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-check-double text-green-500 mr-2"></i>
+                                <p class="text-gray-700">Pasangan ditemukan: <span id="pairsFound" class="font-bold text-indigo-600">0</span>/<span id="totalPairs" class="font-bold text-indigo-600">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl border border-gray-200 p-4">
+                        <div class="flex items-center justify-center mb-4">
+                            <i class="fas fa-trophy text-yellow-500 mr-2"></i>
+                            <h3 class="text-xl font-bold text-indigo-600">Papan Peringkat</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full bg-white rounded-lg overflow-hidden">
+                                <thead class="bg-indigo-100">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left text-indigo-600">
+                                            <i class="fas fa-medal mr-1"></i> Peringkat
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-indigo-600">
+                                            <i class="fas fa-user mr-1"></i> Nama
+                                        </th>
+                                        <th class="px-4 py-3 text-left text-indigo-600">
+                                            <i class="fas fa-star mr-1"></i> Skor
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="leaderboardBody">
+                                    <!-- Leaderboard entries will be inserted here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-12 text-center text-gray-600 py-4 border-t border-gray-200">
+            <p class="flex items-center justify-center">
+                <i class="fas fa-code mr-2"></i>
+                Dibuat dengan Canva AI oleh Ewan
+            </p>
+        </footer>
+    </div>
+
+    <!-- Material Modal -->
+    <div id="materialModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40 hidden modal">
+        <div class="bg-white rounded-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <div class="flex items-center">
+                        <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-book text-indigo-600"></i>
+                        </div>
+                        <h2 id="modalTitle" class="text-2xl font-bold text-indigo-600"></h2>
+                    </div>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 focus:outline-none bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div id="modalMediaContainer" class="mb-6 flex justify-center">
+                    <!-- Media content will be inserted here -->
+                </div>
+                <div id="modalContent" class="prose max-w-none formatted-content">
+                    <!-- Content will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Button -->
+    <div id="chatButton" class="fixed bottom-6 right-6 z-30">
+        <button class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg transition duration-300 bounce">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Live Chat Modal -->
+    <div id="chatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4 h-[80vh] flex flex-col shadow-2xl">
+            <div class="p-4 bg-indigo-600 text-white rounded-t-2xl flex justify-between items-center">
+                <div class="flex items-center">
+                    <div class="bg-white/10 p-2 rounded-lg mr-2">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="text-xl font-bold">Tanya Ewan</h3>
+                </div>
+                <button id="closeChatModal" class="text-white hover:text-gray-200 focus:outline-none bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 bg-gray-50">
+                <div class="bot-bubble chat-bubble">
+                    <p>Halo! Saya Ewan, asisten belajarmu. Ada yang bisa saya bantu?</p>
+                </div>
+            </div>
+            <div class="p-4 border-t">
+                <div class="flex">
+                    <input type="text" id="chatInput" class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Ketik pesanmu di sini...">
+                    <button id="sendMessage" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-r-lg transition duration-300">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="toast-notification">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span id="toastMessage">Permainan Selesai!</span>
+        </div>
+    </div>
+
+    <!-- Zoom Modal for Game Cards -->
+    <div id="zoomModal" class="zoom-modal">
+        <div class="zoom-content">
+            <span class="zoom-close">&times;</span>
+            <div id="zoomContent" class="text-center"></div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let userData = {
+            name: '',
+            startTime: null,
+            timeSpent: 0,
+            sessionId: generateSessionId(),
+            chatSessionId: null, // For tracking chat sessions on the server
+            isTabActive: true,    // Track if tab is active
+            lastActiveTime: null, // Last time the tab was active
+            timerInterval: null   // Store timer interval reference
+        };
+        
+        let chatHistory = []; // Local chat history for display purposes
+        let materiData = [];
+        let gameData = [];
+        let leaderboardData = [];
+        let activityLogQueue = []; // Queue for activity logs
+        let isLoggingActivity = false; // Flag to prevent multiple simultaneous log requests
+        
+        let gameState = {
+            isPlaying: false,
+            score: 0,
+            timer: 60,
+            interval: null,
+            pairs: [],
+            flippedCards: [],
+            matchedPairs: 0,
+            totalPairs: 0,
+            cardBeingViewed: null, // Track which card is being viewed in enlarged mode
+            isPaused: false        // Track if game is paused
+        };
+
+        // DOM Elements
+        const loginModal = document.getElementById('loginModal');
+        const userName = document.getElementById('userName');
+        const startLearning = document.getElementById('startLearning');
+        const siteTitle = document.getElementById('siteTitle');
+        const userNameDisplay = document.getElementById('userNameDisplay');
+        const siteDescription = document.getElementById('siteDescription');
+        const timeSpent = document.getElementById('timeSpent');
+        const tabStatus = document.getElementById('tabStatus');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorMessage = document.getElementById('errorMessage');
+        const materiContainer = document.getElementById('materiContainer');
+        const materialModal = document.getElementById('materialModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMediaContainer = document.getElementById('modalMediaContainer');
+        const modalContent = document.getElementById('modalContent');
+        const closeModal = document.getElementById('closeModal');
+        const chatButton = document.getElementById('chatButton');
+        const chatModal = document.getElementById('chatModal');
+        const closeChatModal = document.getElementById('closeChatModal');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const sendMessage = document.getElementById('sendMessage');
+        const materiTab = document.getElementById('materiTab');
+        const gameTab = document.getElementById('gameTab');
+        const materiSection = document.getElementById('materiSection');
+        const gameSection = document.getElementById('gameSection');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const gameBoard = document.getElementById('gameBoard');
+        const currentScore = document.getElementById('currentScore');
+        const gameTimer = document.getElementById('gameTimer');
+        const pairsFound = document.getElementById('pairsFound');
+        const totalPairs = document.getElementById('totalPairs');
+        const leaderboardBody = document.getElementById('leaderboardBody');
+        const toastNotification = document.getElementById('toastNotification');
+        const toastMessage = document.getElementById('toastMessage');
+        const confettiContainer = document.createElement('div');
+        const zoomModal = document.getElementById('zoomModal');
+        const zoomContent = document.getElementById('zoomContent');
+        const zoomClose = document.querySelector('.zoom-close');
+        const activityIndicator = document.getElementById('activityIndicator');
+
+        // Add confetti container to body
+        confettiContainer.id = 'confettiContainer';
+        confettiContainer.style.position = 'fixed';
+        confettiContainer.style.top = '0';
+        confettiContainer.style.left = '0';
+        confettiContainer.style.width = '100%';
+        confettiContainer.style.height = '100%';
+        confettiContainer.style.pointerEvents = 'none';
+        confettiContainer.style.zIndex = '100';
+        document.body.appendChild(confettiContainer);
+
+        // API URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxu4_38Ogms1g0zCsmhZ9GF2OsjdKNsTg-g3UfdKFi45dU3m_n-ISF-nRNOMZf3tPWUXQ/exec';
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            // Login functionality
+            startLearning.addEventListener('click', handleLogin);
+            userName.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') handleLogin();
+            });
+
+            // Modal functionality
+            closeModal.addEventListener('click', () => {
+                materialModal.classList.add('hidden');
+                logActivity('close_material');
+            });
+
+            // Chat functionality
+            chatButton.addEventListener('click', () => {
+                chatModal.classList.remove('hidden');
+                logActivity('open_chat');
+            });
+            
+            closeChatModal.addEventListener('click', () => {
+                chatModal.classList.add('hidden');
+                logActivity('close_chat');
+            });
+            
+            sendMessage.addEventListener('click', sendChatMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+
+            // Tab functionality
+            materiTab.addEventListener('click', () => {
+                materiSection.classList.remove('hidden');
+                gameSection.classList.add('hidden');
+                materiTab.classList.add('bg-indigo-600', 'text-white');
+                materiTab.classList.remove('bg-white', 'text-gray-700');
+                gameTab.classList.add('bg-white', 'text-gray-700');
+                gameTab.classList.remove('bg-pink-600', 'text-white');
+                logActivity('view_materi_tab');
+            });
+            
+            gameTab.addEventListener('click', () => {
+                materiSection.classList.add('hidden');
+                gameSection.classList.remove('hidden');
+                materiTab.classList.add('bg-white', 'text-gray-700');
+                materiTab.classList.remove('bg-indigo-600', 'text-white');
+                gameTab.classList.add('bg-pink-600', 'text-white');
+                gameTab.classList.remove('bg-white', 'text-gray-700');
+                logActivity('view_game_tab');
+            });
+
+            // Game functionality
+            startGameBtn.addEventListener('click', startGame);
+
+            // Zoom modal
+            zoomClose.addEventListener('click', () => {
+                zoomModal.style.display = 'none';
+                // If we were viewing a card, allow flipping again
+                if (gameState.cardBeingViewed) {
+                    gameState.cardBeingViewed = null;
+                }
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === zoomModal) {
+                    zoomModal.style.display = 'none';
+                    // If we were viewing a card, allow flipping again
+                    if (gameState.cardBeingViewed) {
+                        gameState.cardBeingViewed = null;
+                    }
+                }
+            });
+            
+            // Set up activity log batch processing
+            setInterval(() => {
+                if (activityLogQueue.length > 0) {
+                    processActivityLogs();
+                }
+            }, 10000); // Process logs every 10 seconds
+            
+            // Tab visibility event listeners
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('focus', handleTabFocus);
+            window.addEventListener('blur', handleTabBlur);
+        });
+        
+        // Handle tab visibility change
+        function handleVisibilityChange() {
+            if (document.hidden) {
+                handleTabBlur();
+            } else {
+                handleTabFocus();
+            }
+        }
+        
+        // Handle tab focus
+        function handleTabFocus() {
+            if (!userData.isTabActive && userData.name) {
+                userData.isTabActive = true;
+                
+                // Update UI
+                tabStatus.innerHTML = '<i class="fas fa-eye mr-1"></i> Aktif';
+                tabStatus.classList.remove('tab-inactive');
+                tabStatus.classList.add('tab-active');
+                
+                // Calculate time spent while away
+                if (userData.lastActiveTime) {
+                    const now = new Date();
+                    const timeAway = Math.floor((now - userData.lastActiveTime) / 1000);
+                    
+                    // Show notification of time away
+                    if (timeAway > 5) { // Only show if away for more than 5 seconds
+                        const minutes = Math.floor(timeAway / 60);
+                        const seconds = timeAway % 60;
+                        const timeAwayText = minutes > 0 ? 
+                            `${minutes} menit ${seconds} detik` : 
+                            `${seconds} detik`;
+                            
+                        showToast(`Selamat datang kembali! Timer dijeda selama ${timeAwayText}`, 3000);
+                    }
+                }
+                
+                // Resume timer
+                startTimer();
+                
+                // Resume game timer if game is in progress
+                if (gameState.isPlaying && gameState.isPaused) {
+                    resumeGameTimer();
+                }
+                
+                // Log activity
+                logActivity('tab_focus');
+            }
+        }
+        
+        // Handle tab blur
+        function handleTabBlur() {
+            if (userData.isTabActive && userData.name) {
+                userData.isTabActive = false;
+                userData.lastActiveTime = new Date();
+                
+                // Update UI
+                tabStatus.innerHTML = '<i class="fas fa-eye-slash mr-1"></i> Tidak Aktif';
+                tabStatus.classList.remove('tab-active');
+                tabStatus.classList.add('tab-inactive');
+                
+                // Pause timer
+                if (userData.timerInterval) {
+                    clearInterval(userData.timerInterval);
+                    userData.timerInterval = null;
+                }
+                
+                // Pause game timer if game is in progress
+                if (gameState.isPlaying && !gameState.isPaused) {
+                    pauseGameTimer();
+                }
+                
+                // Log activity
+                logActivity('tab_blur');
+            }
+        }
+        
+        // Generate a unique session ID
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Login handler
+        function handleLogin() {
+            const name = userName.value.trim();
+            if (name) {
+                userData.name = name;
+                userData.startTime = new Date();
+                userData.lastActiveTime = new Date();
+                userData.isTabActive = true;
+                loginModal.classList.add('hidden');
+                
+                // Update user name display
+                userNameDisplay.textContent = userData.name;
+                
+                // Start timer
+                startTimer();
+                
+                // Load data
+                fetchData();
+                
+                // Initialize chat session
+                initChatSession();
+                
+                // Log login activity
+                logActivity('login');
+            } else {
+                userName.classList.add('border-red-500');
+                setTimeout(() => {
+                    userName.classList.remove('border-red-500');
+                }, 1000);
+            }
+        }
+
+        // Initialize chat session with server
+        function initChatSession() {
+            const formData = new FormData();
+            formData.append('action', 'initChatSession');
+            formData.append('userName', userData.name);
+            
+            fetch(API_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    userData.chatSessionId = data.chatSessionId;
+                    console.log('Chat session initialized:', userData.chatSessionId);
+                }
+            })
+            .catch(error => {
+                console.error('Error initializing chat session:', error);
+            });
+        }
+
+        // Timer functionality - now with pause/resume capability
+        function startTimer() {
+            // Clear existing timer if any
+            if (userData.timerInterval) {
+                clearInterval(userData.timerInterval);
+            }
+            
+            // Only start timer if tab is active
+            if (userData.isTabActive) {
+                userData.timerInterval = setInterval(() => {
+                    const now = new Date();
+                    const diff = Math.floor((now - userData.startTime) / 1000);
+                    userData.timeSpent = diff;
+                    
+                    updateTimerDisplay(diff);
+                    
+                    // Save time spent every minute
+                    if (diff % 60 === 0 && diff > 0) {
+                        saveTimeSpent();
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Update timer display
+        function updateTimerDisplay(seconds) {
+            const hours = Math.floor(seconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
+            
+            timeSpent.textContent = `${hours}:${minutes}:${secs}`;
+        }
+
+        // Save time spent to spreadsheet
+        function saveTimeSpent() {
+            const formData = new FormData();
+            formData.append('action', 'saveTimeSpent');
+            formData.append('name', userData.name);
+            formData.append('timeSpent', userData.timeSpent);
+            
+            fetch(API_URL, {
+                method: 'POST',
+                body: formData
+            }).catch(error => console.error('Error saving time spent:', error));
+        }
+
+        // Fetch data from Google Sheets
+        async function fetchData() {
+            try {
+                loadingIndicator.classList.remove('hidden');
+                errorMessage.classList.add('hidden');
+                
+                const response = await fetch(`${API_URL}?action=getData`);
+                if (!response.ok) throw new Error('Network response was not ok');
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Process data
+                    materiData = data.materi || [];
+                    gameData = data.game || [];
+                    leaderboardData = data.leaderboard || [];
+                    
+                    // Update UI
+                    if (data.siteInfo && data.siteInfo.length > 0) {
+                        // Update site title from SiteInfo
+                        const siteTitleText = data.siteInfo[0].Title || 'Belajar Bersama';
+                        document.title = siteTitleText;
+                        siteTitle.textContent = siteTitleText;
+                        
+                        // Update site description
+                        siteDescription.textContent = data.siteInfo[0].Deskripsi || '';
+                    } else {
+                        siteTitle.textContent = 'Belajar Bersama';
+                    }
+                    
+                    renderMateriCards();
+                    renderLeaderboard();
+                    
+                    logActivity('load_content');
+                } else {
+                    throw new Error('Failed to load data');
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                errorMessage.classList.remove('hidden');
+                siteTitle.textContent = 'Belajar Bersama';
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Render materi cards
+        function renderMateriCards() {
+            materiContainer.innerHTML = '';
+            
+            materiData.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'materi-card bg-white overflow-hidden hover:shadow-xl transition-all duration-300';
+                
+                let thumbnailUrl = item['Url Thumbnail'] || '';
+                // If no thumbnail, use a placeholder icon
+                const thumbnailContent = thumbnailUrl ? 
+                    `<img src="${thumbnailUrl}" alt="${item.Materi}" class="w-full h-full object-cover">` :
+                    `<div class="flex items-center justify-center h-full bg-gradient-to-br from-indigo-500 to-purple-600">
+                        <i class="fas fa-book-open text-6xl text-white opacity-80"></i>
+                    </div>`;
+                
+                // Get a preview of the content, preserving line breaks
+                const contentPreview = item['Isi Materi'].substring(0, 150) + (item['Isi Materi'].length > 150 ? '...' : '');
+                
+                card.innerHTML = `
+                    <div class="relative h-48 overflow-hidden">
+                        ${thumbnailContent}
+                        <div class="absolute inset-0 materi-card-overlay"></div>
+                        <div class="absolute bottom-0 left-0 p-4 w-full">
+                            <div class="flex items-center">
+                                <div class="bg-indigo-600 p-2 rounded-lg mr-2">
+                                    <i class="fas fa-graduation-cap text-white"></i>
+                                </div>
+                                <h3 class="text-white font-bold text-xl">${item.Materi}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-gray-600 content-preview mb-4">${contentPreview}</p>
+                        <button class="btn-primary text-white px-4 py-2 rounded-lg transition duration-300 w-full flex items-center justify-center">
+                            <i class="fas fa-book-reader mr-2"></i>
+                            Baca Materi
+                        </button>
+                    </div>
+                `;
+                
+                card.querySelector('button').addEventListener('click', () => {
+                    openMaterialModal(item);
+                    logActivity('view_material', { materialTitle: item.Materi });
+                });
+                
+                materiContainer.appendChild(card);
+            });
+        }
+
+        // Open material modal
+        
+        // Open material modal
+        function openMaterialModal(item) {
+            modalTitle.textContent = item.Materi;
+            
+            // Handle media content
+            modalMediaContainer.innerHTML = '';
+            const mediaUrl = item['Url Gambar/Video'] || '';
+            
+            if (mediaUrl.includes('youtube.com') || mediaUrl.includes('youtu.be')) {
+                // YouTube video - show as button instead of embedding
+                const videoId = getYouTubeVideoId(mediaUrl);
+                modalMediaContainer.innerHTML = `
+                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-play-circle mr-2"></i>
+                        Tonton Video
+                    </a>
+                `;
+            } else if (mediaUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                // Image
+                modalMediaContainer.innerHTML = `
+                    <div class="rounded-lg overflow-hidden shadow-lg">
+                        <img src="${mediaUrl}" alt="${item.Materi}" class="max-w-full max-h-96">
+                    </div>
+                `;
+            } else if (mediaUrl.includes("heyzine.com/flip-book/")) {
+                // Heyzine Flipbook Embed
+                modalMediaContainer.innerHTML = `
+                    <iframe allowfullscreen="allowfullscreen" allow="clipboard-write"
+                        scrolling="no" class="fp-iframe"
+                        src="${mediaUrl}"
+                        style="border: 1px solid lightgray; width: 100%; height: 400px; border-radius: 12px;">
+                    </iframe>
+                `;
+            } else if (mediaUrl) {
+                // Other URL
+                modalMediaContainer.innerHTML = `
+                    <a href="${mediaUrl}" target="_blank" class="btn-primary text-white px-6 py-3 rounded-lg inline-flex items-center">
+                        <i class="fas fa-external-link-alt mr-2"></i>
+                        Buka Tautan
+                    </a>
+                `;
+            }
+            
+            // Set content with preserved formatting
+            modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
+            
+            // Show modal
+            materialModal.classList.remove('hidden');
+        }
+            
+            // Set content with preserved formatting
+            modalContent.innerHTML = `<div class="text-gray-700 formatted-content">${item['Isi Materi']}</div>`;
+            
+            // Show modal
+            materialModal.classList.remove('hidden');
+        }
+
+        // Extract YouTube video ID
+        function getYouTubeVideoId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        // Chat functionality - now using server-side Gemini API
+        async function sendChatMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to chat
+            addChatMessage(message, 'user');
+            chatInput.value = '';
+            
+            // Log chat message sent
+            logActivity('send_chat');
+            
+            // Show typing indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'bot-bubble chat-bubble';
+            typingIndicator.innerHTML = '<div class="flex space-x-1"><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div><div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div></div>';
+            chatMessages.appendChild(typingIndicator);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            try {
+                // Send message to server for processing with Gemini API
+                const formData = new FormData();
+                formData.append('action', 'processChat');
+                formData.append('message', message);
+                formData.append('userName', userData.name);
+                formData.append('chatSessionId', userData.chatSessionId || '');
+                
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                // Remove typing indicator
+                chatMessages.removeChild(typingIndicator);
+                
+                // Process response
+                if (data.success) {
+                    const botResponse = data.response;
+                    addChatMessage(botResponse, 'bot');
+                    
+                    // Update chat history for display purposes
+                    chatHistory.push({ role: 'user', content: message });
+                    chatHistory.push({ role: 'bot', content: botResponse });
+                    
+                    // Update chat session ID if provided
+                    if (data.chatSessionId) {
+                        userData.chatSessionId = data.chatSessionId;
+                    }
+                    
+                    // Log chat response received
+                    logActivity('receive_chat_response');
+                } else {
+                    addChatMessage("Maaf, saya tidak dapat memproses permintaan Anda saat ini. Silakan coba lagi nanti.", 'bot');
+                }
+            } catch (error) {
+                console.error('Error sending message to server:', error);
+                chatMessages.removeChild(typingIndicator);
+                addChatMessage("Maaf, terjadi kesalahan saat berkomunikasi dengan asisten. Silakan coba lagi nanti.", 'bot');
+            }
+        }
+
+        // Add message to chat
+        function addChatMessage(message, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.className = sender === 'user' ? 'user-bubble chat-bubble' : 'bot-bubble chat-bubble';
+            messageElement.innerHTML = `<p>${message}</p>`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // Show toast notification
+        function showToast(message, duration = 3000) {
+            toastMessage.textContent = message;
+            toastNotification.classList.add('toast-animation');
+            
+            setTimeout(() => {
+                toastNotification.classList.remove('toast-animation');
+            }, duration);
+        }
+
+        // Game functionality
+        function startGame() {
+            // Reset game state
+            gameState.isPlaying = true;
+            gameState.isPaused = false;
+            gameState.score = 0;
+            gameState.timer = 60;
+            gameState.flippedCards = [];
+            gameState.matchedPairs = 0;
+            gameState.cardBeingViewed = null;
+            
+            // Update UI
+            currentScore.textContent = '0';
+            gameTimer.textContent = '60';
+            
+            // Clear previous interval if exists
+            if (gameState.interval) {
+                clearInterval(gameState.interval);
+            }
+            
+            // Create game pairs
+            createGamePairs();
+            
+            // Render game board
+            renderGameBoard();
+            
+            // Log game start
+            logActivity('start_game');
+            
+            // Start timer only if tab is active
+            if (userData.isTabActive) {
+                startGameTimer();
+            } else {
+                gameState.isPaused = true;
+                showToast('Permainan akan dimulai saat Anda kembali ke tab ini', 3000);
+            }
+        }
+        
+        // Start game timer
+        function startGameTimer() {
+            gameState.interval = setInterval(() => {
+                gameState.timer--;
+                gameTimer.textContent = gameState.timer;
+                
+                if (gameState.timer <= 0 || gameState.matchedPairs === gameState.totalPairs) {
+                    endGame();
+                }
+            }, 1000);
+        }
+        
+        // Pause game timer
+        function pauseGameTimer() {
+            if (gameState.interval) {
+                clearInterval(gameState.interval);
+                gameState.interval = null;
+            }
+            gameState.isPaused = true;
+        }
+        
+        // Resume game timer
+        function resumeGameTimer() {
+            if (gameState.isPaused) {
+                startGameTimer();
+                gameState.isPaused = false;
+            }
+        }
+
+        // Create game pairs
+        function createGamePairs() {
+            // Use game data from sheet or fallback to default pairs
+            let items = [];
+            
+            if (gameData.length > 0) {
+                // Use data from sheet
+                items = gameData.map(item => ({
+                    question: item.Question || '',
+                    answer: item.Answer || '',
+                    imageUrl: item.ImageUrl || '' // Add support for image URLs
+                }));
+            } else {
+                // Fallback data
+                items = [
+                    { question: '2 + 2', answer: '4' },
+                    { question: '3 × 3', answer: '9' },
+                    { question: '10 - 5', answer: '5' },
+                    { question: '12 ÷ 3', answer: '4' },
+                    { question: '7 + 8', answer: '15' },
+                    { question: '9 - 4', answer: '5' }
+                ];
+            }
+            
+            // Limit to 6 pairs for better gameplay
+            items = items.slice(0, 6);
+            
+            // Create pairs
+            gameState.pairs = [];
+            items.forEach(item => {
+                gameState.pairs.push(
+                    { 
+                        id: `q_${Math.random()}`, 
+                        type: 'question', 
+                        content: item.question, 
+                        pairId: item.question + item.answer,
+                        imageUrl: item.imageUrl || '' 
+                    },
+                    { 
+                        id: `a_${Math.random()}`, 
+                        type: 'answer', 
+                        content: item.answer, 
+                        pairId: item.question + item.answer,
+                        imageUrl: '' // We don't show images for answers
+                    }
+                );
+            });
+            
+            // Shuffle pairs
+            gameState.pairs = shuffleArray(gameState.pairs);
+            gameState.totalPairs = items.length;
+            totalPairs.textContent = gameState.totalPairs;
+            pairsFound.textContent = '0';
+        }
+
+        // Render game board
+        function renderGameBoard() {
+            gameBoard.innerHTML = '';
+            
+            gameState.pairs.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'game-card';
+                cardElement.dataset.id = card.id;
+                cardElement.dataset.pairId = card.pairId;
+                
+                // Create front of card (always the same)
+                const frontContent = `
+                    <div class="game-card-front flex flex-col items-center justify-center">
+                        <i class="fas fa-question text-2xl mb-1"></i>
+                        <span class="text-xs">Klik untuk membalik</span>
+                    </div>
+                `;
+                
+                // Create back of card (with image support)
+                let backContent = '';
+                
+                if (card.imageUrl && card.imageUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                    // If there's an image URL, show the image
+                    backContent = `
+                        <div class="game-card-back">
+                            <img src="${card.imageUrl}" alt="${card.content}">
+                        </div>
+                    `;
+                } else {
+                    // Otherwise show text content
+                    backContent = `
+                        <div class="game-card-back">
+                            <div class="overflow-hidden text-sm">${card.content}</div>
+                        </div>
+                    `;
+                }
+                
+                cardElement.innerHTML = frontContent + backContent;
+                
+                // Add click event for flipping and viewing
+                cardElement.addEventListener('click', () => {
+                    if (!gameState.isPlaying || gameState.isPaused) return;
+                    if (gameState.flippedCards.length >= 2) return;
+                    if (cardElement.classList.contains('matched')) return;
+                    
+                    // If card is already flipped, show enlarged view
+                    if (cardElement.classList.contains('flipped')) {
+                        // Find the card data
+                        const cardData = gameState.pairs.find(p => p.id === card.id);
+                        if (cardData) {
+                            showEnlargedCard(cardData);
+                            gameState.cardBeingViewed = cardElement;
+                        }
+                        return;
+                    }
+                    
+                    // Flip card
+                    cardElement.classList.add('flipped');
+                    gameState.flippedCards.push({
+                        element: cardElement,
+                        id: card.id,
+                        pairId: card.pairId
+                    });
+                    
+                    // Log card flip
+                    logActivity('flip_card');
+                    
+                    // Check for match if two cards are flipped
+                    if (gameState.flippedCards.length === 2) {
+                        setTimeout(checkForMatch, 1000);
+                    }
+                });
+                
+                gameBoard.appendChild(cardElement);
+            });
+        }
+
+        // Show enlarged card view
+        function showEnlargedCard(card) {
+            zoomContent.innerHTML = '';
+            
+            // Create an enlarged card view
+            const enlargedCard = document.createElement('div');
+            enlargedCard.className = 'enlarged-card';
+            
+            // Add card content based on type
+            if (card.imageUrl && card.imageUrl.match(/\.(jpeg|jpg|gif|png)$/i)) {
+                // Show image with text below
+                enlargedCard.innerHTML = `
+                    <img src="${card.imageUrl}" alt="${card.content}" class="enlarged-card-image">
+                    <div class="enlarged-card-content">${card.content}</div>
+                    <div class="mt-4 text-gray-500 text-sm">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Klik di luar kartu untuk kembali
+                    </div>
+                `;
+            } else {
+                // Show text content only
+                enlargedCard.innerHTML = `
+                    <div class="enlarged-card-content">${card.content}</div>
+                    <div class="mt-4 text-gray-500 text-sm">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Klik di luar kartu untuk kembali
+                    </div>
+                `;
+            }
+            
+            zoomContent.appendChild(enlargedCard);
+            zoomModal.style.display = 'flex';
+            
+            // Log card view
+            logActivity('view_card_detail');
+        }
+
+        // Check for match
+        function checkForMatch() {
+            const [card1, card2] = gameState.flippedCards;
+            
+            if (card1.pairId === card2.pairId) {
+                // Match found
+                card1.element.classList.add('matched');
+                card2.element.classList.add('matched');
+                gameState.matchedPairs++;
+                gameState.score += 10;
+                
+                // Update UI
+                currentScore.textContent = gameState.score;
+                pairsFound.textContent = gameState.matchedPairs;
+                
+                // Log match found
+                logActivity('match_found');
+                
+                // Check if game is complete
+                if (gameState.matchedPairs === gameState.totalPairs) {
+                    endGame();
+                }
+            } else {
+                // No match
+                card1.element.classList.remove('flipped');
+                card2.element.classList.remove('flipped');
+                
+                // Penalty
+                gameState.score = Math.max(0, gameState.score - 2);
+                currentScore.textContent = gameState.score;
+            }
+            
+            // Reset flipped cards
+            gameState.flippedCards = [];
+        }
+
+        // End game
+        function endGame() {
+            // Clear interval
+            clearInterval(gameState.interval);
+            gameState.isPlaying = false;
+            gameState.isPaused = false;
+            
+            // Calculate bonus points for remaining time
+            const timeBonus = Math.max(0, gameState.timer);
+            gameState.score += timeBonus;
+            
+            // Update UI
+            currentScore.textContent = gameState.score;
+            
+            // Save score to leaderboard
+            saveScore();
+            
+            // Show toast notification instead of modal
+            showToast(`Permainan Selesai! Skor: ${gameState.score}`, 3000);
+            
+            // Create confetti effect
+            createConfetti();
+            
+            // Log game end
+            logActivity('end_game', { score: gameState.score });
+        }
+
+        // Save score to leaderboard
+        function saveScore() {
+            const formData = new FormData();
+            formData.append('action', 'saveScore');
+            formData.append('name', userData.name);
+            formData.append('score', gameState.score);
+            
+            fetch(API_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update leaderboard data
+                    leaderboardData = data.leaderboard || [];
+                    renderLeaderboard();
+                    
+                    // Log score saved
+                    logActivity('save_score', { score: gameState.score });
+                }
+            })
+            .catch(error => {
+                console.error('Error saving score:', error);
+            });
+        }
+
+        // Render leaderboard
+        function renderLeaderboard() {
+            leaderboardBody.innerHTML = '';
+            
+            // Sort leaderboard by score
+            const sortedLeaderboard = [...leaderboardData].sort((a, b) => b.Score - a.Score);
+            
+            // Display top 5 scores
+            sortedLeaderboard.slice(0, 5).forEach((entry, index) => {
+                const row = document.createElement('tr');
+                row.className = index % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                
+                // Add medal icons for top 3
+                let rankDisplay = `${index + 1}`;
+                if (index === 0) {
+                    rankDisplay = `<i class="fas fa-medal text-yellow-400" title="Juara 1"></i>`;
+                } else if (index === 1) {
+                    rankDisplay = `<i class="fas fa-medal text-gray-400" title="Juara 2"></i>`;
+                } else if (index === 2) {
+                    rankDisplay = `<i class="fas fa-medal text-yellow-700" title="Juara 3"></i>`;
+                }
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium">${rankDisplay}</td>
+                    <td class="px-4 py-3">${entry.Name}</td>
+                    <td class="px-4 py-3 font-medium">${entry.Score}</td>
+                `;
+                
+                leaderboardBody.appendChild(row);
+            });
+            
+            // Add empty rows if needed
+            for (let i = sortedLeaderboard.length; i < 5; i++) {
+                const row = document.createElement('tr');
+                row.className = i % 2 === 0 ? 'bg-gray-50' : 'bg-white';
+                
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-medium">${i + 1}</td>
+                    <td class="px-4 py-3">-</td>
+                    <td class="px-4 py-3 font-medium">-</td>
+                `;
+                
+                leaderboardBody.appendChild(row);
+            }
+        }
+
+        // Create confetti effect
+        function createConfetti() {
+            // Clear any existing confetti
+            confettiContainer.innerHTML = '';
+            
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = `${Math.random() * 100}%`;
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                confettiContainer.appendChild(confetti);
+                
+                // Animate confetti
+                const animation = confetti.animate([
+                    { 
+                        transform: `translate(0, 0) rotate(0deg)`,
+                        opacity: 1
+                    },
+                    {
+                        transform: `translate(${Math.random() * 200 - 100}px, ${Math.random() * 500 + 200}px) rotate(${Math.random() * 360}deg)`,
+                        opacity: 0
+                    }
+                ], {
+                    duration: Math.random() * 3000 + 2000,
+                    easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)',
+                    fill: 'forwards'
+                });
+                
+                animation.onfinish = () => {
+                    confetti.remove();
+                };
+            }
+        }
+
+        // Log user activity
+        function logActivity(action, details = {}) {
+            // Only log if user is logged in
+            if (!userData.name) return;
+            
+            // Create activity log entry
+            const activityLog = {
+                timestamp: new Date().toISOString(),
+                userName: userData.name,
+                sessionId: userData.sessionId,
+                action: action,
+                details: JSON.stringify(details),
+                timeSpent: userData.timeSpent
+            };
+            
+            // Add to queue
+            activityLogQueue.push(activityLog);
+            
+            // Show activity indicator
+            activityIndicator.classList.add('active');
+            
+            // Process immediately if queue is getting large
+            if (activityLogQueue.length >= 10) {
+                processActivityLogs();
+            }
+        }
+        
+        // Process activity logs in batch
+        function processActivityLogs() {
+            // If already processing or queue is empty, return
+            if (isLoggingActivity || activityLogQueue.length === 0) return;
+            
+            isLoggingActivity = true;
+            activityIndicator.classList.add('active');
+            
+            // Get logs to process (up to 20 at a time)
+            const logsToProcess = activityLogQueue.splice(0, 20);
+            
+            // Prepare form data
+            const formData = new FormData();
+            formData.append('action', 'logActivity');
+            formData.append('logs', JSON.stringify(logsToProcess));
+            
+            // Send logs to server
+            fetch(API_URL, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (!data.success) {
+                    // If failed, put logs back in queue
+                    activityLogQueue = [...logsToProcess, ...activityLogQueue];
+                    console.error('Failed to log activities:', data.message);
+                }
+            })
+            .catch(error => {
+                // If error, put logs back in queue
+                activityLogQueue = [...logsToProcess, ...activityLogQueue];
+                console.error('Error logging activities:', error);
+            })
+            .finally(() => {
+                isLoggingActivity = false;
+                
+                // Turn off indicator if queue is empty
+                if (activityLogQueue.length === 0) {
+                    activityIndicator.classList.remove('active');
+                }
+            });
+        }
+
+        // Utility function to shuffle array
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+        
+        // Make sure logs are sent before page unload
+        window.addEventListener('beforeunload', () => {
+            // Log page exit
+            logActivity('logout');
+            
+            // Process any remaining logs synchronously
+            if (activityLogQueue.length > 0) {
+                const logsToProcess = [...activityLogQueue];
+                
+                // Create synchronous request
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', API_URL, false); // false makes it synchronous
+                
+                // Prepare form data
+                const formData = new FormData();
+                formData.append('action', 'logActivity');
+                formData.append('logs', JSON.stringify(logsToProcess));
+                
+                // Send request
+                try {
+                    xhr.send(formData);
+                } catch (e) {
+                    console.error('Error sending final logs:', e);
+                }
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97432a2c4459b596',t:'MTc1NjA0MTgxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
